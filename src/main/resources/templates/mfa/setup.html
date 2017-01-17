@@ -1,1 +1,93 @@
-<h1>Here!</h1>
+<!--/*
+~ Copyright 2017 Stormpath, Inc.
+~
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~
+~     http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/head :: head"/> /*/-->
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="box col-md-6 col-md-offset-3">
+            <div class="stormpath-header">
+                <img src="https://stormpath.com/images/template/logo-nav.png"/>
+            </div>
+
+            <!--/* displayed if account IS NOT null, indicating that the user IS logged in */-->
+            <div th:if="${account}">
+                <h1 th:inline="text">Hello, [[${account.fullName}]]!</h1>
+
+                <div th:if="${smsFactors}">
+                    <h2>SMS Factors</h2>
+                    <table class="table table-bordered  ">
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                        </tr>
+                        <tr th:each="smsFactor : ${smsFactors}">
+                            <td th:text="${smsFactor.phone.name}"/>
+                            <td th:text="${smsFactor.phone.number}"/>
+                        </tr>
+                    </table>
+                </div>
+
+                <div th:if="${googFactors}">
+                    <h2>Google Authenticator Factors</h2>
+                    <table class="table table-bordered  ">
+                        <tr>
+                            <th>Account Name</th>
+                            <th>Issuer</th>
+                        </tr>
+                        <tr th:each="googFactor : ${googFactors}">
+                            <td th:text="${googFactor.accountName}"/>
+                            <td th:text="${googFactor.issuer}"/>
+                        </tr>
+                    </table>
+                </div>
+
+                <form th:action="@{/mfa/sms}" method="post" class="form-inline">
+                    <div class="form-group">
+                        <label class="sr-only" for="sms_name">Name</label>
+                        <input type="text" name="name" class="form-control" id="sms_name" placeholder="Name"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="sr-only" for="sms_phone">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" id="sms_phone" placeholder="Phone Number"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create SMS Factor</button>
+                </form>
+
+                <form th:action="@{/mfa/goog}" method="post" class="form-inline">
+                    <div class="form-group">
+                        <label class="sr-only" for="goog_name">Name</label>
+                        <input type="text" name="name" class="form-control" id="goog_name" placeholder="Name"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Google Authenticator Factor</button>
+                </form>
+
+                <form th:action="@{/logout}" method="post">
+                    <input type="submit" class="btn btn-danger" value="Logout"/>
+                </form>
+            </div>
+
+            <!--/* displayed if account IS null, indicating that the user IS NOT logged in */-->
+            <div th:unless="${account}">
+                <h1>YOU DON'T BELONG HERE</h1>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
