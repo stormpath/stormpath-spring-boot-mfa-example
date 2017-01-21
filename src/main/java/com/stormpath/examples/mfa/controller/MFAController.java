@@ -59,8 +59,10 @@ public class MFAController {
         GoogleAuthenticatorFactor factor = mfaService.getLatestGoogleAuthenticatorFactor(account);
         if (factor == null) {
             factor = mfaService.createGoogleAuthenticatorFactor(account, name);
-            model.addAttribute("qrcode", factor.getBase64QrImage());
         }
+
+        final GoogleAuthenticatorFactor googFactor = factor;
+        mfaService.mfaUnverified(account).ifPresent(s -> model.addAttribute("qrcode", googFactor.getBase64QrImage()));
 
         model.addAttribute("name", factor.getAccountName());
 

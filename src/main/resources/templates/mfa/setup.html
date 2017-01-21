@@ -57,7 +57,7 @@
                     </table>
                 </div>
 
-                <form th:action="@{/mfa/sms}" method="post" class="form-inline">
+                <form th:unless="${smsFactors}" th:action="@{/mfa/sms}" method="post" class="form-inline">
                     <div class="form-group">
                         <label class="sr-only" for="sms_name">Name</label>
                         <input type="text" name="name" class="form-control" id="sms_name" placeholder="Name"/>
@@ -69,7 +69,7 @@
                     <button type="submit" class="btn btn-primary">Create SMS Factor</button>
                 </form>
 
-                <form th:action="@{/mfa/goog}" method="post" class="form-inline">
+                <form th:unless="${googFactors}" th:action="@{/mfa/goog}" method="post" class="form-inline">
                     <div class="form-group">
                         <label class="sr-only" for="goog_name">Name</label>
                         <input type="text" name="name" class="form-control" id="goog_name" placeholder="Name"/>

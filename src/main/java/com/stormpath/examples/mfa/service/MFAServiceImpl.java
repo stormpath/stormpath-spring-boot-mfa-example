@@ -1,8 +1,6 @@
 package com.stormpath.examples.mfa.service;
 
 import com.stormpath.sdk.account.Account;
-import com.stormpath.sdk.challenge.ChallengeList;
-import com.stormpath.sdk.challenge.Challenges;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallenge;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallengeStatus;
 import com.stormpath.sdk.client.Client;
@@ -13,38 +11,59 @@ import com.stormpath.sdk.factor.FactorVerificationStatus;
 import com.stormpath.sdk.factor.Factors;
 import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
 import com.stormpath.sdk.factor.sms.SmsFactor;
+import com.stormpath.sdk.lang.Assert;
 import com.stormpath.sdk.servlet.account.AccountResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 @Service
 public class MFAServiceImpl implements MFAService {
 
     private Client client;
-    private AccountResolver accountResolver;
 
     @Autowired
     public MFAServiceImpl(Client client, AccountResolver accountResolver) {
         this.client = client;
-        this.accountResolver = accountResolver;
     }
 
     @Override
-    public String getMFAEndpoint(HttpServletRequest req) {
-        Account account = accountResolver.getAccount(req);
-        if (account == null) { return null; }
+    public String getPostLoginMFAEndpoint(Account account) {
+        Assert.notNull(account);
+        GoogleAuthenticatorFactor googFactor = getLatestGoogleAuthenticatorFactor(account);
+        SmsFactor smsFactor = getLatestSmsFactor(account);
+
+        return getMFAEndpoint(googFactor, smsFactor, false);
+    }
+
+    @Override
+    public Optional<String> mfaUnverified(Account account) {
+        if (account == null) { return Optional.empty(); }
 
         GoogleAuthenticatorFactor googFactor = getLatestGoogleAuthenticatorFactor(account);
         SmsFactor smsFactor = getLatestSmsFactor(account);
-        if (googFactor == null && smsFactor == null) {
-            return "/mfa/setup";
-        } else if (googFactor != null) { // favor google authenticator over sms
-            return "/mfa/goog";
-        } else { // smsFactor != null
-            return "/mfa/sms";
+
+        if (
+            (googFactor != null && googFactor.getFactorVerificationStatus() == FactorVerificationStatus.VERIFIED) ||
+            (smsFactor != null && smsFactor.getFactorVerificationStatus() == FactorVerificationStatus.VERIFIED)
+        ) {
+            return Optional.empty();
         }
+
+        return Optional.of(getMFAEndpoint(googFactor, smsFactor, true));
+    }
+
+    private String getMFAEndpoint(GoogleAuthenticatorFactor googFactor, SmsFactor smsFactor, boolean shouldRedirect) {
+        String ret = shouldRedirect ? "redirect:" : "";
+        if (googFactor == null && smsFactor == null) {
+            ret += "/mfa/setup";
+        } else if (googFactor != null) { // favor google authenticator over sms
+            ret += "/mfa/goog";
+        } else { // smsFactor != null
+            ret += "/mfa/sms";
+        }
+        return ret;
     }
 
     @Override
@@ -99,9 +118,8 @@ public class MFAServiceImpl implements MFAService {
         factor.setIssuer(null);
         factor.setStatus(FactorStatus.ENABLED);
 
-        // not actually creating a challenge?
         factor = account.createFactor(
-            Factors.GOOGLE_AUTHENTICATOR.newCreateRequestFor(factor).createChallenge().build()
+            Factors.GOOGLE_AUTHENTICATOR.newCreateRequestFor(factor).build()
         );
 
         return factor;
@@ -109,13 +127,7 @@ public class MFAServiceImpl implements MFAService {
 
     @Override
     public GoogleAuthenticatorChallengeStatus validate(GoogleAuthenticatorFactor factor, String code) {
-        GoogleAuthenticatorChallenge challenge = client.instantiate(GoogleAuthenticatorChallenge.class);
-        challenge.setCode(code);
-        challenge = (GoogleAuthenticatorChallenge) factor.createChallenge(
-            Challenges.GOOGLE_AUTHENTICATOR.newCreateRequestFor(challenge).build()
-        );
-
-        if (challenge == null) { return GoogleAuthenticatorChallengeStatus.FAILED; }
+        GoogleAuthenticatorChallenge challenge = factor.createChallenge(code);
 
         return challenge.getStatus();
     }

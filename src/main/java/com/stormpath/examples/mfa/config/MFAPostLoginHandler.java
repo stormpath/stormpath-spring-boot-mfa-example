@@ -30,7 +30,7 @@ public class MFAPostLoginHandler {
         return new WebHandler() {
             @Override
             public boolean handle(HttpServletRequest request, HttpServletResponse response, Account account) {
-                String mfaEndpoint = mfaService.getMFAEndpoint(request);
+                String mfaEndpoint = mfaService.getPostLoginMFAEndpoint(account);
                 try {
                     response.sendRedirect(mfaEndpoint);
                 } catch (IOException e) {

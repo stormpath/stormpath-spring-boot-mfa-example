@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 @Controller
 public class HomeController {
@@ -23,9 +24,8 @@ public class HomeController {
 
     @RequestMapping("/")
     public String home(HttpServletRequest req) {
-//        if (mfaService.shouldRedirectToMFAFlow(req)) {
-//            return "redirect:" + mfaService.getMFAEndpoint(req);
-//        }
-        return "home";
+        Account account = accountResolver.getAccount(req);
+        Optional<String> mfaUnverified = mfaService.mfaUnverified(account);
+        return mfaUnverified.orElse("home");
     }
 }

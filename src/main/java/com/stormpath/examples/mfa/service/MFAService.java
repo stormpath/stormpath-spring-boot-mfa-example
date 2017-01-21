@@ -7,10 +7,12 @@ import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
 import com.stormpath.sdk.factor.sms.SmsFactor;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 public interface MFAService {
 
-    String getMFAEndpoint(HttpServletRequest req);
+    String getPostLoginMFAEndpoint(Account account);
+    Optional<String> mfaUnverified(Account account);
     FactorList<SmsFactor> getSmsFactors(Account account);
     FactorList<GoogleAuthenticatorFactor> getGoogleAuthenticatorFactors(Account account);
     SmsFactor getLatestSmsFactor(Account account);
