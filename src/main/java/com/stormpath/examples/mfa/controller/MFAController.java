@@ -3,10 +3,7 @@ package com.stormpath.examples.mfa.controller;
 import com.stormpath.examples.mfa.service.MFAService;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallengeStatus;
-import com.stormpath.sdk.client.Client;
-import com.stormpath.sdk.factor.FactorList;
 import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
-import com.stormpath.sdk.factor.sms.SmsFactor;
 import com.stormpath.sdk.servlet.account.AccountResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,13 +18,11 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/mfa")
 public class MFAController {
 
-    private Client client;
     private AccountResolver accountResolver;
     private MFAService mfaService;
 
     @Autowired
-    public MFAController(Client client, AccountResolver accountResolver, MFAService mfaService) {
-        this.client = client;
+    public MFAController(AccountResolver accountResolver, MFAService mfaService) {
         this.accountResolver = accountResolver;
         this.mfaService = mfaService;
     }
@@ -37,11 +32,7 @@ public class MFAController {
         // no need for null check, can't get here without being logged in
         Account account = accountResolver.getAccount(req);
 
-        FactorList<SmsFactor> smsFactors = mfaService.getSmsFactors(account);
-        FactorList<GoogleAuthenticatorFactor> googFactors = mfaService.getGoogleAuthenticatorFactors(account);
-
-        if (smsFactors.getSize() > 0) { model.addAttribute("smsFactors", smsFactors); }
-        if (googFactors.getSize() > 0) { model.addAttribute("googFactors", googFactors); }
+        mfaService.addMFAInfoToModel(account, model);
 
         return "mfa/setup";
     }
@@ -56,13 +47,13 @@ public class MFAController {
     public String goog(HttpServletRequest req, @RequestParam(required = false) String name, Model model) {
         Account account = accountResolver.getAccount(req);
 
-        GoogleAuthenticatorFactor factor = mfaService.getLatestGoogleAuthenticatorFactor(account);
+        GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(account);
         if (factor == null) {
             factor = mfaService.createGoogleAuthenticatorFactor(account, name);
         }
 
         final GoogleAuthenticatorFactor googFactor = factor;
-        mfaService.mfaUnverified(account).ifPresent(s -> model.addAttribute("qrcode", googFactor.getBase64QrImage()));
+        mfaService.getMFAUnverifiedEndpoint(account).ifPresent(s -> model.addAttribute("qrcode", googFactor.getBase64QrImage()));
 
         model.addAttribute("name", factor.getAccountName());
 
@@ -70,9 +61,9 @@ public class MFAController {
     }
 
     @RequestMapping(value = "/goog-confirm", method = RequestMethod.POST)
-    public String googConfirm(HttpServletRequest req, @RequestParam String code) {
+    public String googConfirm(HttpServletRequest req, @RequestParam String code, Model model) {
         Account account = accountResolver.getAccount(req);
-        GoogleAuthenticatorFactor factor = mfaService.getLatestGoogleAuthenticatorFactor(account);
+        GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(account);
         if (factor == null) {
             // TODO need error message here
             return "redirect:/mfa/setup";
@@ -82,6 +73,8 @@ public class MFAController {
             // TODO need error message here
             return "redirect:/mfa/goog?name=" + factor.getAccountName();
         }
+
+        mfaService.addMFAInfoToModel(account, model);
 
         // TODO need factor verification success message
         return "home";

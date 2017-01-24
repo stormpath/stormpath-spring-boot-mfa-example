@@ -29,28 +29,28 @@
             <div th:if="${account}">
                 <h1 th:inline="text">Hello, [[${account.fullName}]]!</h1>
 
-                <div th:if="${smsFactors}">
-                    <h2>SMS Factors</h2>
-                    <table class="table table-bordered  ">
+                <div th:if="${smsFactor}">
+                    <h2>SMS Factor</h2>
+                    <table class="table table-bordered">
                         <tr>
                             <th>Name</th>
                             <th>Phone</th>
                         </tr>
-                        <tr th:each="smsFactor : ${smsFactors}">
+                        <tr>
                             <td th:text="${smsFactor.phone.name}"/>
                             <td th:text="${smsFactor.phone.number}"/>
                         </tr>
                     </table>
                 </div>
 
-                <div th:if="${googFactors}">
-                    <h2>Google Authenticator Factors</h2>
-                    <table class="table table-bordered  ">
+                <div th:if="${googFactor}">
+                    <h2>Google Authenticator Factor</h2>
+                    <table class="table table-bordered">
                         <tr>
                             <th>Account Name</th>
                             <th>Issuer</th>
                         </tr>
-                        <tr th:each="googFactor : ${googFactors}">
+                        <tr>
                             <td th:text="${googFactor.accountName}"/>
                             <td th:text="${googFactor.issuer}"/>
                         </tr>
