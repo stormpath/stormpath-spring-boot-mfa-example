@@ -102,6 +102,12 @@ public class MFAServiceImpl implements MFAService {
     }
 
     @Override
+    public void deleteGoogleAuthenticatorFactor(Account account) {
+        GoogleAuthenticatorFactor factor = getGoogleAuthenticatorFactor(account);
+        factor.delete();
+    }
+
+    @Override
     public GoogleAuthenticatorChallengeStatus validate(GoogleAuthenticatorFactor factor, String code) {
         GoogleAuthenticatorChallenge challenge = factor.createChallenge(code);
 

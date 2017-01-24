@@ -32,7 +32,11 @@
             <tr th:if="${googFactor}">
                 <td>GA</td>
                 <td th:text="${googFactor.accountName}"/>
-                <td><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></td>
+                <td>
+                    <form th:action="@{/mfa/goog-delete}" method="post" class="squash-margin-bottom">
+                        <button type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                    </form>
+                </td>
             </tr>
 
         </table>

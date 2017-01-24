@@ -76,12 +76,23 @@ public class MFAController {
 
         if (mfaService.validate(factor, code) != GoogleAuthenticatorChallengeStatus.SUCCESS) {
             // TODO need error message here
-            return "redirect:/mfa/goog?name=" + factor.getAccountName();
+            return "redirect:/mfa/goog-confirm";
         }
 
         mfaService.addMFAInfoToModel(account, model);
 
         // TODO need factor verification success message
+        return "home";
+    }
+
+    @RequestMapping(value = "/goog-delete", method = RequestMethod.POST)
+    public String googDelete(HttpServletRequest req, Model model) {
+        Account account = accountResolver.getAccount(req);
+        mfaService.deleteGoogleAuthenticatorFactor(account);
+
+        mfaService.addMFAInfoToModel(account, model);
+
+        // TODO need factor delete message
         return "home";
     }
 }
