@@ -113,9 +113,9 @@ public class MFAServiceImpl implements MFAService {
         if (googFactor == null && smsFactor == null) {
             ret += "/mfa/setup";
         } else if (googFactor != null) { // favor google authenticator over sms
-            ret += "/mfa/goog";
+            ret += "/mfa/goog-confirm";
         } else { // smsFactor != null
-            ret += "/mfa/sms";
+            ret += "/mfa/sms-confirm";
         }
         return ret;
     }

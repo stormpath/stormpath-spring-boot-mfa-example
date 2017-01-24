@@ -4,6 +4,7 @@ import com.stormpath.examples.mfa.service.MFAService;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallengeStatus;
 import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
+import com.stormpath.sdk.lang.Assert;
 import com.stormpath.sdk.servlet.account.AccountResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -37,37 +38,41 @@ public class MFAController {
         return "mfa/setup";
     }
 
-    @RequestMapping(value = "/sms", method = RequestMethod.GET)
+    @RequestMapping(value = "/sms-setup", method = RequestMethod.GET)
     public String sms() {
         // TODO
         return "mfa/sms";
     }
 
-    @RequestMapping(value = "/goog")
-    public String goog(HttpServletRequest req, @RequestParam(required = false) String name, Model model) {
+    private String finishGoog(GoogleAuthenticatorFactor factor, Model model) {
+        model.addAttribute("name", factor.getAccountName());
+        return "mfa/goog";
+    }
+
+    @RequestMapping(value = "/goog-setup", method = RequestMethod.POST)
+    public String googSetup(HttpServletRequest req, @RequestParam String name, Model model) {
         Account account = accountResolver.getAccount(req);
 
+        GoogleAuthenticatorFactor factor = mfaService.createGoogleAuthenticatorFactor(account, name);
+        model.addAttribute("qrcode", factor.getBase64QrImage());
+
+        return finishGoog(factor, model);
+    }
+
+    @RequestMapping(value = "/goog-confirm", method = RequestMethod.GET)
+    public String googCode(HttpServletRequest req, Model model) {
+        Account account = accountResolver.getAccount(req);
         GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(account);
-        if (factor == null) {
-            factor = mfaService.createGoogleAuthenticatorFactor(account, name);
-        }
+        Assert.notNull(factor);
 
-        final GoogleAuthenticatorFactor googFactor = factor;
-        mfaService.getMFAUnverifiedEndpoint(account).ifPresent(s -> model.addAttribute("qrcode", googFactor.getBase64QrImage()));
-
-        model.addAttribute("name", factor.getAccountName());
-
-        return "mfa/goog";
+        return finishGoog(factor, model);
     }
 
     @RequestMapping(value = "/goog-confirm", method = RequestMethod.POST)
     public String googConfirm(HttpServletRequest req, @RequestParam String code, Model model) {
         Account account = accountResolver.getAccount(req);
         GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(account);
-        if (factor == null) {
-            // TODO need error message here
-            return "redirect:/mfa/setup";
-        }
+        Assert.notNull(factor);
 
         if (mfaService.validate(factor, code) != GoogleAuthenticatorChallengeStatus.SUCCESS) {
             // TODO need error message here
