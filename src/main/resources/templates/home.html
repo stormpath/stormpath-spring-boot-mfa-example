@@ -25,6 +25,11 @@
                         <img src="https://stormpath.com/images/template/logo-nav.png"/>
                     </div>
 
+                    <div class="alert alert-dismissable alert-success" th:if="${not #strings.isEmpty(status)}">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <p th:text="${status}">|Status|</p>
+                    </div>
+
                     <!--/* displayed if account IS NOT null, indicating that the user IS logged in */-->
                     <div th:if="${account}">
                         <h1 th:inline="text">Hello, [[${account.fullName}]]!</h1>
@@ -32,6 +37,7 @@
                         <!--/*/ <th:block th:include="fragments/mfa :: mfa"/> /*/-->
 
                         <form th:action="@{/logout}" method="post">
+                            <a th:href="@{/mfa/setup}" class="btn btn-primary">MFA Setup</a>
                             <input type="submit" class="btn btn-danger" value="Logout"/>
                         </form>
                     </div>

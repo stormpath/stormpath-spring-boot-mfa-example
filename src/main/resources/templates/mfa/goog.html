@@ -25,6 +25,11 @@
                         <img src="https://stormpath.com/images/template/logo-nav.png"/>
                     </div>
 
+                    <div class="alert alert-dismissable alert-danger" th:if="${not #strings.isEmpty(error)}">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <p th:text="${error}">|Error message here.|</p>
+                    </div>
+
                     <!--/* displayed if account IS NOT null, indicating that the user IS logged in */-->
                     <div th:if="${account}">
                         <h3 th:text="${name}"/>
@@ -37,7 +42,6 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Confirm</button>
                         </form>
-
 
                         <form th:action="@{/logout}" method="post">
                             <input type="submit" class="btn btn-danger" value="Logout"/>

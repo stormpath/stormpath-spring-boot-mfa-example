@@ -20,6 +20,6 @@ public interface MFAService {
     GoogleAuthenticatorFactor getGoogleAuthenticatorFactor(Account account);
 
     GoogleAuthenticatorFactor createGoogleAuthenticatorFactor(Account account, String name);
-    void deleteGoogleAuthenticatorFactor(Account account);
+    GoogleAuthenticatorFactor deleteGoogleAuthenticatorFactor(Account account);
     GoogleAuthenticatorChallengeStatus validate(GoogleAuthenticatorFactor factor, String code);
 }

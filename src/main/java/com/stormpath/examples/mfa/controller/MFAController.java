@@ -3,6 +3,7 @@ package com.stormpath.examples.mfa.controller;
 import com.stormpath.examples.mfa.service.MFAService;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallengeStatus;
+import com.stormpath.sdk.factor.Factor;
 import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
 import com.stormpath.sdk.lang.Assert;
 import com.stormpath.sdk.servlet.account.AccountResolver;
@@ -75,24 +76,24 @@ public class MFAController {
         Assert.notNull(factor);
 
         if (mfaService.validate(factor, code) != GoogleAuthenticatorChallengeStatus.SUCCESS) {
-            // TODO need error message here
-            return "redirect:/mfa/goog-confirm";
+            model.addAttribute("error", "Incorrect Google Authenticator code.");
+            return googCode(req, model);
         }
 
         mfaService.addMFAInfoToModel(account, model);
+        model.addAttribute("status", "Successful Google Authenticator Code Confirmation");
 
-        // TODO need factor verification success message
         return "home";
     }
 
     @RequestMapping(value = "/goog-delete", method = RequestMethod.POST)
     public String googDelete(HttpServletRequest req, Model model) {
         Account account = accountResolver.getAccount(req);
-        mfaService.deleteGoogleAuthenticatorFactor(account);
+        GoogleAuthenticatorFactor factor = mfaService.deleteGoogleAuthenticatorFactor(account);
 
         mfaService.addMFAInfoToModel(account, model);
+        model.addAttribute("status", "Successfully Deleted Google Authenticator Factor: " + factor.getAccountName());
 
-        // TODO need factor delete message
         return "home";
     }
 }
