@@ -75,7 +75,7 @@ public class MFAController {
         GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(account);
         Assert.notNull(factor);
 
-        if (mfaService.validate(factor, code) != GoogleAuthenticatorChallengeStatus.SUCCESS) {
+        if (!mfaService.validate(factor, code)) {
             model.addAttribute("error", "Incorrect Google Authenticator code.");
             return googCode(req, model);
         }

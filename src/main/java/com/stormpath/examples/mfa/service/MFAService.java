@@ -2,6 +2,7 @@ package com.stormpath.examples.mfa.service;
 
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallengeStatus;
+import com.stormpath.sdk.factor.Factor;
 import com.stormpath.sdk.factor.FactorList;
 import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
 import com.stormpath.sdk.factor.sms.SmsFactor;
@@ -17,9 +18,10 @@ public interface MFAService {
     void addMFAInfoToModel(Account account, Model model);
 
     SmsFactor getSmsFactor(Account account);
-    GoogleAuthenticatorFactor getGoogleAuthenticatorFactor(Account account);
 
     GoogleAuthenticatorFactor createGoogleAuthenticatorFactor(Account account, String name);
+    GoogleAuthenticatorFactor getGoogleAuthenticatorFactor(Account account);
     GoogleAuthenticatorFactor deleteGoogleAuthenticatorFactor(Account account);
-    GoogleAuthenticatorChallengeStatus validate(GoogleAuthenticatorFactor factor, String code);
+
+    boolean validate(Factor factor, String code);
 }

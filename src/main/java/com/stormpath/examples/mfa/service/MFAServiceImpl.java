@@ -30,6 +30,7 @@ public class MFAServiceImpl implements MFAService {
         this.client = client;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public String getPostLoginMFAEndpoint(Account account) {
         Assert.notNull(account);
@@ -92,6 +93,7 @@ public class MFAServiceImpl implements MFAService {
         if (googFactor != null) { model.addAttribute("googFactor", googFactor); }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public SmsFactor getSmsFactor(Account account) {
         FactorList<SmsFactor> factors = account.getFactors(
@@ -103,6 +105,7 @@ public class MFAServiceImpl implements MFAService {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public GoogleAuthenticatorFactor getGoogleAuthenticatorFactor(Account account) {
         FactorList<GoogleAuthenticatorFactor> factors = account.getFactors(
@@ -135,8 +138,10 @@ public class MFAServiceImpl implements MFAService {
     }
 
     @Override
-    public GoogleAuthenticatorChallengeStatus validate(GoogleAuthenticatorFactor factor, String code) {
-        return factor.createChallenge(code).getStatus();
+    public boolean validate(Factor factor, String code) {
+        Assert.notNull(factor);
+        Assert.notNull(code);
+        return factor.getMostRecentChallenge() != null && factor.getMostRecentChallenge().validate(code);
     }
 
     private String getMFAEndpoint(GoogleAuthenticatorFactor googFactor, SmsFactor smsFactor) {
