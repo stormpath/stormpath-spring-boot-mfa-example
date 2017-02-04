@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface MFAService {
 
     String getPostLoginMFAEndpoint(Account account);
-    Optional<String> getMFAUnverifiedEndpoint(Account account);
+    Optional<String> getMFAEndpoint(Account account);
     void addMFAInfoToModel(Account account, Model model);
 
     SmsFactor getSmsFactor(Account account);

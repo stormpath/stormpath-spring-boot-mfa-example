@@ -3,8 +3,9 @@ package com.stormpath.examples.mfa.service;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallenge;
 import com.stormpath.sdk.challenge.google.GoogleAuthenticatorChallengeStatus;
+import com.stormpath.sdk.challenge.sms.SmsChallenge;
 import com.stormpath.sdk.client.Client;
-import com.stormpath.sdk.factor.FactorCriteria;
+import com.stormpath.sdk.factor.Factor;
 import com.stormpath.sdk.factor.FactorList;
 import com.stormpath.sdk.factor.FactorStatus;
 import com.stormpath.sdk.factor.FactorVerificationStatus;
@@ -35,24 +36,49 @@ public class MFAServiceImpl implements MFAService {
         GoogleAuthenticatorFactor googFactor = getGoogleAuthenticatorFactor(account);
         SmsFactor smsFactor = getSmsFactor(account);
 
-        return getMFAEndpoint(googFactor, smsFactor, false);
+        // favor google
+        if (googFactor != null) {
+            googFactor.createChallenge(client.instantiate(GoogleAuthenticatorChallenge.class));
+        } else if (smsFactor != null) {
+            smsFactor.createChallenge(client.instantiate(SmsChallenge.class));
+        }
+
+        return getMFAEndpoint(googFactor, smsFactor);
     }
 
     @Override
-    public Optional<String> getMFAUnverifiedEndpoint(Account account) {
+    public Optional<String> getMFAEndpoint(Account account) {
         if (account == null) { return Optional.empty(); }
 
         GoogleAuthenticatorFactor googFactor = getGoogleAuthenticatorFactor(account);
         SmsFactor smsFactor = getSmsFactor(account);
 
         if (
-            (googFactor != null && googFactor.getFactorVerificationStatus() == FactorVerificationStatus.VERIFIED) ||
-            (smsFactor != null && smsFactor.getFactorVerificationStatus() == FactorVerificationStatus.VERIFIED)
+            (factorVerified(googFactor) || factorVerified(smsFactor)) &&
+            latestChallengeIsSatisfied(googFactor)
         ) {
             return Optional.empty();
         }
 
-        return Optional.of(getMFAEndpoint(googFactor, smsFactor, true));
+        return Optional.of("redirect:" + getMFAEndpoint(googFactor, smsFactor));
+    }
+
+    private boolean factorVerified(Factor factor) {
+        if (factor != null && factor.getFactorVerificationStatus() == FactorVerificationStatus.VERIFIED) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean latestChallengeIsSatisfied(GoogleAuthenticatorFactor factor) {
+        if (factor == null) { return false; }
+        if (
+            factor.getMostRecentChallenge() != null &&
+            factor.getMostRecentChallenge().getStatus() == GoogleAuthenticatorChallengeStatus.SUCCESS
+        ) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -95,7 +121,7 @@ public class MFAServiceImpl implements MFAService {
         factor.setStatus(FactorStatus.ENABLED);
 
         factor = account.createFactor(
-                Factors.GOOGLE_AUTHENTICATOR.newCreateRequestFor(factor).build()
+            Factors.GOOGLE_AUTHENTICATOR.newCreateRequestFor(factor).build()
         );
 
         return factor;
@@ -110,20 +136,16 @@ public class MFAServiceImpl implements MFAService {
 
     @Override
     public GoogleAuthenticatorChallengeStatus validate(GoogleAuthenticatorFactor factor, String code) {
-        GoogleAuthenticatorChallenge challenge = factor.createChallenge(code);
-
-        return challenge.getStatus();
+        return factor.createChallenge(code).getStatus();
     }
 
-    private String getMFAEndpoint(GoogleAuthenticatorFactor googFactor, SmsFactor smsFactor, boolean shouldRedirect) {
-        String ret = shouldRedirect ? "redirect:" : "";
+    private String getMFAEndpoint(GoogleAuthenticatorFactor googFactor, SmsFactor smsFactor) {
         if (googFactor == null && smsFactor == null) {
-            ret += "/mfa/setup";
+            return "/mfa/setup";
         } else if (googFactor != null) { // favor google authenticator over sms
-            ret += "/mfa/goog-confirm";
+            return "/mfa/goog-confirm";
         } else { // smsFactor != null
-            ret += "/mfa/sms-confirm";
+            return "/mfa/sms-confirm";
         }
-        return ret;
     }
 }

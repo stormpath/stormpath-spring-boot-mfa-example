@@ -2,9 +2,6 @@ package com.stormpath.examples.mfa.controller;
 
 import com.stormpath.examples.mfa.service.MFAService;
 import com.stormpath.sdk.account.Account;
-import com.stormpath.sdk.factor.FactorList;
-import com.stormpath.sdk.factor.google.GoogleAuthenticatorFactor;
-import com.stormpath.sdk.factor.sms.SmsFactor;
 import com.stormpath.sdk.servlet.account.AccountResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,7 +29,7 @@ public class HomeController {
 
         mfaService.addMFAInfoToModel(account, model);
 
-        Optional<String> mfaUnverified = mfaService.getMFAUnverifiedEndpoint(account);
+        Optional<String> mfaUnverified = mfaService.getMFAEndpoint(account);
         return mfaUnverified.orElse("home");
     }
 }
