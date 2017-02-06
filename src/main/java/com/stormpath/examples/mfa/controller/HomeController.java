@@ -12,22 +12,18 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @Controller
-public class HomeController {
-
-    private AccountResolver accountResolver;
-    private MFAService mfaService;
+public class HomeController extends BaseController {
 
     @Autowired
     public HomeController(AccountResolver accountResolver, MFAService mfaService) {
-        this.accountResolver = accountResolver;
-        this.mfaService = mfaService;
+        super(accountResolver, mfaService);
     }
 
     @RequestMapping("/")
     public String home(HttpServletRequest req, Model model) {
-        Account account = accountResolver.getAccount(req);
+        Account account = getAccount(req);
 
-        mfaService.addMFAInfoToModel(account, model);
+        addMFAInfoToModel(req, model);
 
         Optional<String> mfaUnverified = mfaService.getMFAEndpoint(account);
         return mfaUnverified.orElse("home");

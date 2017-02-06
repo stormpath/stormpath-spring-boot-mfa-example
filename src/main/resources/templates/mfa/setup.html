@@ -31,14 +31,6 @@
 
                 <!--/*/ <th:block th:include="fragments/mfa :: mfa"/> /*/-->
 
-                <form th:unless="${smsFactor}" th:action="@{/mfa/sms-setup}" method="post" class="form-inline">
-                    <div class="form-group">
-                        <label class="sr-only" for="sms_phone">Phone Number</label>
-                        <input type="text" name="phone" class="form-control" id="sms_phone" placeholder="Phone Number"/>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create SMS Factor</button>
-                </form>
-
                 <form th:unless="${googFactor}" th:action="@{/mfa/goog-setup}" method="post" class="form-inline">
                     <div class="form-group">
                         <label class="sr-only" for="goog_name">Name</label>
