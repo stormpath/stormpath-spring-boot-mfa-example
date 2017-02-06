@@ -33,7 +33,15 @@
                     <!--/* displayed if account IS NOT null, indicating that the user IS logged in */-->
                     <div th:if="${account}">
                         <h3 th:text="${name}"/>
-                        <img th:if="${qrcode}" th:src="@{ 'data:image/png;base64,' + ${qrcode} }"/>
+                        <div th:if="${qrcode}">
+                            Use a Google Authenticator App
+                            (<a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">Google Play</a> or
+                            <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">Apple App Store</a>)
+                            to scan the QR Code.<p/>
+
+                            <b>Note</b>: The QR code will only be shown once.<br/>
+                            <img th:src="@{ 'data:image/png;base64,' + ${qrcode} }"/>
+                        </div>
 
                         <form th:action="@{/mfa/goog-confirm}" method="post" class="form-inline">
                             <div class="form-group">

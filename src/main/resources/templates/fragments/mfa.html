@@ -17,21 +17,14 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
 <body th:fragment="mfa">
-    <div th:if="${smsFactor != null or googFactor != null}">
+    <div th:if="${googFactor}">
         <table class="table table-bordered">
             <tr>
-                <th>Type</th>
-                <th>Phone Number or Account Name</th>
+                <th>Google Authenticator Name</th>
                 <th>Delete</th>
             </tr>
-            <tr th:if="${smsFactor}">
-                <td>SMS</td>
-                <td th:text="${smsFactor.phone.number}"/>
-                <td><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></td>
-            </tr>
-            <tr th:if="${googFactor}">
-                <td>GA</td>
-                <td th:text="${googFactor.accountName}"/>
+            <tr>
+                <td th:text="${googFactor.accountName}">NAME</td>
                 <td>
                     <form th:action="@{/mfa/goog-delete}" method="post" class="squash-margin-bottom">
                         <button type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
