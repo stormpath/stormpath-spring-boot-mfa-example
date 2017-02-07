@@ -42,17 +42,14 @@ public class MFAPostLoginHandler {
 
     @Bean
     public WebHandler loginPostHandler() {
-        return new WebHandler() {
-            @Override
-            public boolean handle(HttpServletRequest request, HttpServletResponse response, Account account) {
-                String mfaEndpoint = mfaService.getPostLoginMFAEndpoint(account);
-                try {
-                    response.sendRedirect(mfaEndpoint);
-                } catch (IOException e) {
-                    log.error("Error redirecting to {}: {}", mfaEndpoint, e.getMessage(), e);
-                }
-                return false;
+        return (request, response, account) -> {
+            String mfaEndpoint = mfaService.getPostLoginMFAEndpoint(account);
+            try {
+                response.sendRedirect(mfaEndpoint);
+            } catch (IOException e) {
+                log.error("Error redirecting to {}: {}", mfaEndpoint, e.getMessage(), e);
             }
+            return false;
         };
     }
 }

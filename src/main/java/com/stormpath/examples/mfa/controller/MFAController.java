@@ -52,8 +52,7 @@ public class MFAController extends BaseController {
 
     @RequestMapping(value = "/goog-setup", method = RequestMethod.POST)
     public String googSetup(HttpServletRequest req, @RequestParam String name, Model model) {
-        Account account = getAccount(req);
-        GoogleAuthenticatorFactor factor = mfaService.createGoogleAuthenticatorFactor(account, name);
+        GoogleAuthenticatorFactor factor = mfaService.createGoogleAuthenticatorFactor(getAccount(req), name);
         model.addAttribute("qrcode", factor.getBase64QrImage());
 
         return finishGoog(factor, model);
@@ -61,18 +60,14 @@ public class MFAController extends BaseController {
 
     @RequestMapping(value = "/goog-confirm", method = RequestMethod.GET)
     public String googCode(HttpServletRequest req, Model model) {
-        Account account = getAccount(req);
-        GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(account);
-        Assert.notNull(factor);
+        GoogleAuthenticatorFactor factor = mfaService.getGoogleAuthenticatorFactor(getAccount(req));
 
         return finishGoog(factor, model);
     }
 
     @RequestMapping(value = "/goog-confirm", method = RequestMethod.POST)
     public String googConfirm(HttpServletRequest req, @RequestParam String code, Model model) {
-        Account account = getAccount(req);
-
-        if (mfaService.validate(account, code) != GoogleAuthenticatorChallengeStatus.SUCCESS) {
+        if (mfaService.validate(getAccount(req), code) != GoogleAuthenticatorChallengeStatus.SUCCESS) {
             model.addAttribute("error", "Incorrect Google Authenticator code.");
             return googCode(req, model);
         }
@@ -85,8 +80,7 @@ public class MFAController extends BaseController {
 
     @RequestMapping(value = "/goog-delete", method = RequestMethod.POST)
     public String googDelete(HttpServletRequest req, Model model) {
-        Account account = getAccount(req);
-        GoogleAuthenticatorFactor factor = mfaService.deleteGoogleAuthenticatorFactor(account);
+        GoogleAuthenticatorFactor factor = mfaService.deleteGoogleAuthenticatorFactor(getAccount(req));
 
         addMFAInfoToModel(req, model);
         model.addAttribute("status", "Successfully Deleted Google Authenticator Factor: " + factor.getAccountName());
