@@ -13,6 +13,11 @@ TL;DR:
 4. `mvn spring-boot:run`
 5.  Browse to: [http://localhost:8080](http://localhost:8080)
 
+**Note:** Multi-Factor Authentication is only available with paid Stormpath plans. 
+For more information please see [Stormpath’s Pricing Page](https://stormpath.com/pricing).
+
+You can see this example in action at [https://stormpath-mfa-example.herokuapp.com](https://stormpath-mfa-example.herokuapp.com)
+
 The flow looks like this:
 
 ![mfa login flow](images/MFAFlow.png)
