@@ -31,10 +31,10 @@
 
                 <!--/*/ <th:block th:include="fragments/mfa :: mfa"/> /*/-->
 
-                <form th:unless="${googFactor}" th:action="@{/mfa/goog-setup}" method="post" class="form-inline">
+                <form th:unless="${googFactor}" th:action="@{/mfa/goog-setup}" id="goog_factor" method="post" class="form-inline">
                     <div class="form-group">
                         <label class="sr-only" for="goog_name">Name</label>
-                        <input type="text" name="name" class="form-control" id="goog_name" placeholder="Name"/>
+                        <input type="text" name="name" class="form-control" id="goog_name" placeholder="Enter a Name" required="true"/>
                     </div>
                     <button type="submit" class="btn btn-primary">Create Google Authenticator Factor</button>
                 </form>
@@ -52,5 +52,12 @@
         </div>
     </div>
 </div>
+<script>
+    function validate(e) {
+        $().ready(function() {
+            $("#goog_factor").validate();
+        });
+    }
+</script>
 </body>
 </html>
