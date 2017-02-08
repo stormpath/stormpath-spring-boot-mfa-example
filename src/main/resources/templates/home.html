@@ -43,8 +43,18 @@
 
                     <!--/* displayed if account IS null, indicating that the user IS NOT logged in */-->
                     <div th:unless="${account}">
-                        <h1>Who are you?</h1>
+                        <h2>Welcome to the Stormpath<br/>Spring Boot MFA Example</h2>
+
+                        In this example, you will be required to enter the latest code from a Google Authenticator
+                        app each time you login (The login flow is shown below).<p/>
+
+                        For more information, take a look at the <a href="https://github.com/stormpath/stormpath-spring-boot-mfa-example" target="_blank">Github</a> project.
+                        <p/>
+
                         <a th:href="@{/login}" class="btn btn-success">Login</a>
+                        <a th:href="@{/register}" class="btn btn-primary">Register</a>
+                        <p/>
+                        <img src="https://raw.githubusercontent.com/stormpath/stormpath-spring-boot-mfa-example/master/images/MFAFlow.png"/>
                     </div>
                 </div>
             </div>
